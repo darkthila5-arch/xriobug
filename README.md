@@ -16,6 +16,7 @@ Multi-session WhatsApp bot (Baileys) with a modern pairing website (pair code or
 | TikTok search | `.tts <words>` shows results as swipeable cards with **VIDEO / AUDIO / MORE** buttons. |
 | Sri Lanka news | `.news`, `.hiru`, `.derana`, `.itn` and **auto posting** of new headlines to the groups and channels you add. |
 | Status tools | Auto view, auto react (your own emojis), auto save, view-once recovery. |
+| Bug tools | Owner-only prank / crash commands: notification overflow, invisible messages, glitch text, BiDi flip, fake system alerts, contact flood, repeat-text freeze and the dramatic `.tina` roast. |
 | Owner tools | public / private mode, broadcast, block, join, leave, bio, profile picture, restart. |
 | Web settings | After linking, the bot sends a password to your own chat. Log in at `/settings` with your number to switch features on or off. |
 | Admin site | `/admin` controls all sessions: search, tick many numbers and change an option, restart, send passwords or messages, reset or unlink them in one go. It can also pause new links. |
@@ -114,6 +115,18 @@ Optional fields: `owner: true` (owner only), `hidden: true` (silent for everyone
 
 ## Commands
 Send `menu` or `help` without the prefix and it works too.
+
+**Bug (`.bugmenu`, owner only)**
+- `.crash` / `.notifbug` — invisible-character overflow that bloats push notifications and can freeze the notification drawer. Usage: `.crash @mention` or `.crash 94771234567`
+- `.blankbug` / `.nullmsg` / `.emptybug` — message that looks empty in the chat preview but carries a huge hidden blob.
+- `.zalgo` / `.glitch` / `.cursedtext [text] <num>` — stacking-diacritic glitch text that lags the text renderer.
+- `.rtlbug` / `.rtl` / `.fliptext [text] <num>` — BiDi right-to-left override that makes the conversation unreadable.
+- `.sysalert` / `.fakealert` / `.fakesys [text] <num>` — spoofed "WhatsApp Security" notice.
+- `.cspam` / `.contactspam` / `.contactbug <num> [count]` — flood of dummy vCards (default 60) that freezes the contact-list renderer.
+- `.repeatbug` / `.repeatcrash` / `.spamtext [word] <num>` — a word repeated 4 000 times; allocates a huge string in the notification handler.
+- `.tina` / `.tinabug` / `.dramabug [name] <num>` — dramatic Sinhala roast message combined with an overflow payload.
+
+All bug commands are **owner-only**. Target with a `@mention`, a reply, or a phone number after the command.
 
 **Public (`.menu`)**
 - General: `.alive`, `.ping`, `.runtime`, `.about`, `.owner`, `.status`, `.pair <your number>`
