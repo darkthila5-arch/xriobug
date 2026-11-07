@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#050505">
+<meta name="robots" content="noindex">
+<title>Admin • RIO X MD</title>
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/web.css?v=6">
+<link rel="stylesheet" href="/admin.css?v=3">
+<link rel="stylesheet" href="/notices.css?v=1">
+</head>
+<body data-page="admin">
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<canvas id="snow" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
+<canvas id="leaves" aria-hidden="true" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
+
+<header class="top"><div class="wrap wide">
+  <a class="brand" href="/admin" aria-label="RIO X MD admin">
+    <img class="mark" src="/ghost.png" alt="" width="34" height="41">
+    <span class="wordmark">
+      <span class="w-top">RIO<span class="x">X</span>MD</span>
+      <span class="w-bot">ADMIN CONSOLE</span>
+    </span>
+  </a>
+  <button class="btn alt sm" id="logout" type="button" hidden>Log out</button>
+</div></header>
+
+<main><div class="wrap wide">
+  <section id="login" class="narrow" style="max-width:640px;margin:0 auto">
+    <div class="hero">
+      <div class="hero-mark" aria-hidden="true"><span class="ring"></span><span class="ring r2"></span><img class="hero-ghost" src="/ghost.png" alt=""></div>
+      <p class="eyebrow"><span class="dot" aria-hidden="true"></span>Owner only</p>
+      <h1>Admin <span class="grad">console</span></h1>
+      <p class="lede">Control every linked number from one place.</p>
+    </div>
+    <form id="loginForm" class="card">
+      <label for="user">Username</label>
+      <div class="field"><input id="user" name="user" type="text" autocomplete="username" required></div>
+      <label for="password">Password</label>
+      <div class="field"><input id="password" name="password" type="password" autocomplete="current-password" required></div>
+      <p class="error" id="loginError" role="alert"></p>
+      <button class="btn" type="submit"><span class="label">Log in</span><span class="spin" aria-hidden="true"></span></button>
+    </form>
+  </section>
+
+  <section id="panel" hidden>
+  <div class="shell">
+    <nav class="side" id="tabs" role="tablist" aria-label="Admin sections">
+      <p class="navgroup">Dashboard</p>
+      <button class="tab" role="tab" type="button" data-tab="overview" aria-selected="true"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span><span>Overview</span></button>
+      <p class="navgroup">Manage</p>
+      <button class="tab" role="tab" type="button" data-tab="numbers" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M11 18h2"/></svg></span><span>Numbers</span><em class="badge" id="numBadge">0</em></button>
+      <button class="tab" role="tab" type="button" data-tab="commands" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h8M18 6h2M4 12h2M12 12h8M4 18h10M20 18h0"/><circle cx="15" cy="6" r="2.2"/><circle cx="9" cy="12" r="2.2"/><circle cx="17" cy="18" r="2.2"/></svg></span><span>Commands</span></button>
+      <button class="tab" role="tab" type="button" data-tab="broadcast" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></span><span>Broadcast</span></button>
+      <button class="tab" role="tab" type="button" data-tab="notices" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 20a1.9 1.9 0 0 0 3.4 0"/></svg></span><span>Notices</span></button>
+      <button class="tab" role="tab" type="button" data-tab="botmedia" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M21 16l-5-5-8 8"/></svg></span><span>Bot media</span></button>
+      <button class="tab" role="tab" type="button" data-tab="channels" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="19" r="1.2"/><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/></svg></span><span>Channels</span></button>
+      <p class="navgroup">Monitor</p>
+      <button class="tab" role="tab" type="button" data-tab="insights" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></span><span>Insights</span></button>
+      <button class="tab" role="tab" type="button" data-tab="analytics" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg></span><span>Analytics</span></button>
+      <button class="tab" role="tab" type="button" data-tab="server" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></span><span>Server</span></button>
+      <button class="tab" role="tab" type="button" data-tab="logs" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6"/></svg></span><span>Logs</span><em class="badge" id="logBadge" hidden>0</em></button>
+      <button class="tab" role="tab" type="button" data-tab="activity" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span>Audit</span></button>
+      <p class="navgroup">System</p>
+      <button class="tab" role="tab" type="button" data-tab="security" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></span><span>Security</span></button>
+      <button class="tab" role="tab" type="button" data-tab="backup" aria-selected="false"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></span><span>Backup</span></button>
+      <p class="side-foot"><span class="dot" aria-hidden="true"></span>Live, refreshes by itself</p>
+    </nav>
+    <div class="content">
+    <div class="banner" id="bulkBar" hidden role="status"><span id="bulkLabel"></span><span class="meter"><span id="bulkFill" style="width:0"></span></span><b id="bulkCount"></b></div>
+
+    <!-- OVERVIEW -->
+    <section class="tabpane" id="pane-overview" role="tabpanel">
+      <header class="pagehead"><div><h1>Overview</h1><p>How the bot is doing right now.</p></div></header>
+      <div class="stats" id="stats"></div>
+
+      <div class="ov">
+        <div class="col">
+          <section class="card" id="attentionCard">
+            <h2>Needs attention</h2>
+            <p class="note" id="attentionNote">Numbers that are offline or have no web password yet.</p>
+            <ul class="slist plain" id="attention"></ul>
+          </section>
+        </div>
+        <div class="col">
+          <section class="card tight">
+            <h2>New links</h2>
+            <label class="row" for="pairSwitch">
+              <span class="txt"><b>Let people link new numbers</b><small>Off = the pair page is paused. Numbers already linked keep working.</small></span>
+              <input type="checkbox" class="sw" id="pairSwitch" role="switch" aria-label="Allow new links">
+            </label>
+          </section>
+          <section class="card tight">
+            <h2>Channel support</h2>
+            <label class="row" for="boostSwitch">
+              <span class="txt"><b>Channel support is running</b><small id="boostInfo">Numbers that opted in follow and react to premium users' channels. Off = everything pauses.</small></span>
+              <input type="checkbox" class="sw" id="boostSwitch" role="switch" aria-label="Channel support running">
+            </label>
+          </section>
+          <section class="card">
+            <h2>Server</h2>
+            <div class="kv" id="serverStats"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVER (live) -->
+    <section class="tabpane" id="pane-server" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Server</h1><p>Live CPU, memory and more. Updates every 2 seconds while this page is open.</p></div><span class="pill on" id="sysLive">Live</span></header>
+      <div class="sysgrid">
+        <div class="sysbox" data-k="cpu"><small>CPU</small><b class="v">–</b><span class="bar"><i></i></span><em class="s">Waiting for data…</em></div>
+        <div class="sysbox" data-k="mem"><small>Memory</small><b class="v">–</b><span class="bar"><i></i></span><em class="s"></em></div>
+        <div class="sysbox" data-k="loop"><small>Event loop delay</small><b class="v">–</b><span class="bar"><i></i></span><em class="s">Bot reaction time (lower is better)</em></div>
+        <div class="sysbox" data-k="disk"><small>Disk</small><b class="v">–</b><span class="bar"><i></i></span><em class="s"></em></div>
+      </div>
+      <div class="sysgrid plain">
+        <div class="sysbox" data-k="cmdTotal"><small>Commands run (all time)</small><b class="v">–</b><em class="s"></em></div>
+        <div class="sysbox" data-k="cmdToday"><small>Commands today</small><b class="v">–</b><em class="s"></em></div>
+        <div class="sysbox" data-k="cmdMin"><small>Commands in the last minute</small><b class="v">–</b><em class="s"></em></div>
+        <div class="sysbox" data-k="cmdErr"><small>Command errors</small><b class="v">–</b><em class="s"></em></div>
+      </div>
+      <div class="duo">
+        <section class="card tight"><h2>CPU</h2><p class="note">Last 5 minutes. Whole server (grey) and this bot only (green).</p>
+          <svg class="spark" id="chCpu" viewBox="0 0 300 90" preserveAspectRatio="none" role="img" aria-label="CPU usage over the last 5 minutes"><path class="grid" d="M0 22.5H300M0 45H300M0 67.5H300"/><path class="area" d=""/><path class="line other" d=""/><path class="line" d=""/></svg>
+          <div class="axis"><span>5 min ago</span><span>now</span></div></section>
+        <section class="card tight"><h2>Memory</h2><p class="note">Last 5 minutes, as a share of the memory this server may use.</p>
+          <svg class="spark" id="chMem" viewBox="0 0 300 90" preserveAspectRatio="none" role="img" aria-label="Memory usage over the last 5 minutes"><path class="grid" d="M0 22.5H300M0 45H300M0 67.5H300"/><path class="area" d=""/><path class="line" d=""/></svg>
+          <div class="axis"><span>5 min ago</span><span>now</span></div></section>
+      </div>
+      <section class="card"><h2>Details</h2><div class="kv" id="sysKv"></div></section>
+    </section>
+
+    <!-- NUMBERS -->
+    <section class="tabpane" id="pane-numbers" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Numbers</h1><p>Every linked number. Tick several to act on them together, or tap one to open its settings.</p></div></header>
+      <section class="card">
+        <div class="toolbar">
+          <div class="field sm"><input id="q" type="text" inputmode="search" placeholder="Search by digits (4 or more)" autocomplete="off" aria-label="Search numbers"></div>
+          <div class="chips" id="filters" role="group" aria-label="Filter">
+            <button class="chip" type="button" data-f="all" aria-pressed="true">All</button>
+            <button class="chip" type="button" data-f="on" aria-pressed="false">Online</button>
+            <button class="chip" type="button" data-f="off" aria-pressed="false">Offline</button>
+          </div>
+        </div>
+        <div class="selbar"><span id="selInfo">Nothing selected</span><span class="links"><button class="link" id="selShown" type="button">Select shown</button><button class="link" id="selOnline" type="button">Select online</button><button class="link" id="selNone" type="button">Clear</button></span></div>
+        <ul class="slist" id="sessions"></ul>
+        <p class="note hint">Tip: tick numbers to act on many at once. Tap a number to see and change its own settings.</p>
+      </section>
+    </section>
+
+    <!-- CHANNELS -->
+    <section class="tabpane" id="pane-channels" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Channels</h1><p>Channels that premium users added for support.</p></div></header>
+      <section class="card" id="csongCard">
+        <h2>🎙️ Channel song (.chsong)</h2>
+        <p class="note">How the first post of <b>.chsong</b> looks. This is the <b>default look</b>: the host's own number always uses it, 👑 premium numbers use it until they set their own look on <b>/settings</b> (their clips are capped at the premium maximum), and free numbers always post the normal thumbnail. The song itself always follows as a voice note. The animation is a silent, looping GIF-style clip made from the song's own thumbnail. You can still force one look per post with <b>-eq</b> or <b>-normal</b> in the command.</p>
+        <div class="stack">
+          <div class="field sm"><select id="csongMode" aria-label="Thumbnail look"><option value="normal">Normal thumbnail (picture + details)</option><option value="equalizer">Thumbnail with equalizer animation (GIF style clip)</option></select></div>
+          <div id="csongEq" class="stack" hidden>
+            <div class="field sm"><select id="csongLayout" aria-label="Equalizer layout"></select></div>
+            <div class="stack" id="csongBlobBox" hidden>
+              <div class="field sm"><select id="csongBlobShape" aria-label="Form of the glowing shape"><option value="wings">🦋 Shape: wings at the top (bass makes the wings)</option><option value="round">⭕ Shape: even all round</option></select></div>
+              <div class="field sm"><select id="csongBlobStyle" aria-label="Look of the glowing shape"><option value="filled">🟢 Look: filled</option><option value="outline">⭕ Look: glowing outline</option><option value="layers">🔷 Look: layers</option></select></div>
+            </div>
+            <div class="field sm" id="csongCenterBox"><select id="csongCenter" aria-label="Picture in the middle of the round layout"></select></div>
+            <div id="csongImgBox" class="stack" hidden>
+              <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <img id="csongImgPrev" alt="Your centre picture" width="64" height="64" hidden style="border-radius:50%;object-fit:cover;border:2px solid #fff3">
+                <input id="csongImgFile" type="file" accept="image/*" hidden>
+                <button class="btn alt sm" id="csongImgPick" type="button">Choose picture</button>
+                <button class="btn danger sm" id="csongImgDel" type="button" hidden>Remove</button>
+              </div>
+              <p class="note">Any JPG, PNG, WEBP or GIF. It is cut to a square and shown as the round badge. The picture is saved as soon as it uploads; press <b>Save</b> to use it.</p>
+            </div>
+            <div class="field sm" id="csongMotionBox"><select id="csongMotion" aria-label="How the middle picture moves"><option value="spin">🔄 Middle picture turns slowly</option><option value="still">⏸️ Middle picture stays still</option><option value="pulse">💓 Middle picture pulses with the beat</option><option value="both">🌀 Turns and pulses with the beat</option></select></div>
+            <div class="field sm"><input id="csongSecs" type="number" inputmode="numeric" min="4" max="30" step="1" placeholder="Animation length in seconds (4 to 30)" aria-label="Animation length in seconds"></div>
+            <div class="field sm"><select id="csongStyle" aria-label="Equalizer colour"></select></div>
+            <div class="field sm"><select id="csongParticles" aria-label="Floating particles"><option value="off">✨ Floating particles: off</option><option value="on">✨ Floating particles: on (works with every layout)</option></select></div>
+            <div class="field sm"><select id="csongPStyle" aria-label="Particle colour"></select></div>
+          </div>
+          <div class="actions"><button class="btn" id="csongSave" type="button">Save</button></div>
+          <p class="note" id="csongNote" aria-live="polite"></p>
+        </div>
+      </section>
+      <section class="card" id="boostPost">
+        <h2>React to one post</h2>
+        <p class="note">Open the post in WhatsApp, copy its link and paste it here. The numbers react one by one, a few seconds apart.</p>
+        <div class="stack">
+          <div class="field sm"><input id="postLink" type="text" placeholder="https://whatsapp.com/channel/0029Va.../123" autocomplete="off" aria-label="Channel post link"></div>
+          <div id="postPacks"></div>
+          <div class="field sm"><input id="postEmojis" type="text" placeholder="Extra emojis (optional), e.g. 🔥 😍" autocomplete="off" aria-label="Extra reaction emojis"></div>
+          <div class="field sm"><select id="postScope" aria-label="Which numbers react"><option value="all">All online numbers</option><option value="optin">Only numbers that switched on "Support other channels"</option></select></div>
+          <label class="row" for="postFollow"><span class="txt"><b>Follow the channel first</b><small>Numbers that do not follow it yet follow it before reacting.</small></span><input type="checkbox" class="sw" id="postFollow" role="switch" aria-label="Follow first" checked></label>
+          <div class="actions"><button class="btn" id="postGo" type="button">React now</button></div>
+          <p class="note" id="postStatus" aria-live="polite"></p>
+        </div>
+      </section>
+      <section class="card" id="boostPoll">
+        <h2>Vote on a channel poll</h2>
+        <p class="note">Paste the link of a poll post and press Load. Pick the option, choose how many numbers vote, then start. Each number votes only once, one by one with a pause. Tip: try 1 vote first.</p>
+        <div class="stack">
+          <div class="field sm"><input id="pollLink" type="text" placeholder="https://whatsapp.com/channel/0029Va.../123" autocomplete="off" aria-label="Channel poll post link"></div>
+          <div class="actions"><button class="btn" id="pollLoad" type="button">Load poll</button></div>
+          <div id="pollBox" hidden>
+            <p class="note"><b id="pollQ"></b></p>
+            <p class="note" id="pollTally" aria-live="polite"></p>
+            <div class="field sm"><select id="pollAction" aria-label="What to do"><option value="vote">Vote (numbers that have not voted on this poll yet)</option><option value="change">Change vote (numbers that already voted)</option><option value="remove">Remove vote (numbers that already voted)</option></select></div>
+            <div id="pollOpts" role="radiogroup" aria-label="Poll options"></div>
+            <div id="pollManual" hidden>
+              <p class="note" id="pollDiag"></p>
+              <div class="field sm"><input id="pollText" type="text" maxlength="100" placeholder="Option text, exactly as in the poll" autocomplete="off" aria-label="Option text"></div>
+            </div>
+            <div class="field sm"><select id="pollScope" aria-label="Which numbers vote"><option value="all">All online numbers</option><option value="optin">Only numbers that switched on "Support other channels"</option></select></div>
+            <p class="note" id="pollAvail" aria-live="polite"></p>
+            <label class="row" for="pollAny" id="pollAnyRow"><span class="txt"><b>Also numbers whose vote is not remembered</b><small>For change / remove: use every online number, also ones that voted before or outside this panel. Numbers that never voted are unaffected.</small></span><input type="checkbox" class="sw" id="pollAny" role="switch" aria-label="Include numbers whose vote is not remembered"></label>
+            <div class="field sm"><input id="pollCount" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="How many votes"></div>
+            <label class="row" for="pollFollow"><span class="txt"><b>Follow the channel first</b><small>Numbers that do not follow it yet follow it before voting.</small></span><input type="checkbox" class="sw" id="pollFollow" role="switch" aria-label="Follow first" checked></label>
+            <div class="actions"><button class="btn" id="pollGo" type="button">Vote now</button> <button class="btn" id="pollStop" type="button" hidden>Stop</button></div>
+          </div>
+          <p class="note" id="pollStatus" aria-live="polite"></p>
+        </div>
+      </section>
+      <section class="card" id="boostAdmin">
+        <h2>Channels being supported</h2>
+        <p class="note">Added by premium users or by you. The numbers follow the channel and react to every new post (a few at a time, spaced out).</p>
+        <label class="row" for="welcomeAll"><span class="txt"><b>Auto follow / join for every new link</b><small>On: whoever links a number is made to follow the channels below (set to "all online numbers") and the .autofollow / .autojoin targets right away, and is told in their own chat. Off: only numbers that opted in to "Support other channels".</small></span><input type="checkbox" class="sw" id="welcomeAll" role="switch" aria-label="Auto follow and join for every new link" checked></label>
+        <h3 class="subh">Add a channel</h3>
+        <p class="note">Pick an emoji pack (or several): the numbers react to new posts only with emojis from the packs you tick. No pack = default reactions.</p>
+        <div class="stack">
+          <div class="field sm"><input id="boostLink" type="text" placeholder="https://whatsapp.com/channel/0029Va..." autocomplete="off" aria-label="WhatsApp channel link"></div>
+          <div id="boostPacks"></div>
+          <div class="field sm"><input id="boostEmojis" type="text" placeholder="Extra emojis (optional), e.g. 🔥 😍" autocomplete="off" aria-label="Extra reaction emojis"></div>
+          <label class="row" for="boostAuto"><span class="txt"><b>React to every new post automatically</b><small>Off = the numbers only follow the channel. You can still react to single posts below.</small></span><input type="checkbox" class="sw" id="boostAuto" role="switch" aria-label="React to every new post" checked></label>
+          <div class="field sm"><select id="boostScope" aria-label="Which numbers follow"><option value="all">All online numbers</option><option value="optin">Only numbers that switched on "Support other channels"</option></select></div>
+          <div class="actions"><button class="btn" id="boostAdd" type="button">Add channel</button></div>
+        </div>
+        <ul class="slist plain" id="boostList"></ul>
+        <pre id="boostDiag" class="note" style="white-space:pre-wrap;word-break:break-word;font-size:.78rem;max-height:320px;overflow:auto" hidden></pre>
+      </section>
+    </section>
+
+    <!-- INSIGHTS -->
+    <section class="tabpane" id="pane-insights" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Insights</h1><p>Online history and which features are used.</p></div></header>
+      <section class="card">
+        <h2>Online numbers</h2>
+        <p class="note">Last 24 hours, one point per minute. Cleared when the server restarts.</p>
+        <div id="spark" class="spark" role="img" aria-label="Online numbers over time"></div>
+      </section>
+      <div class="duo">
+        <section class="card"><h2>Feature usage</h2><div id="featBars" class="bars"></div></section>
+        <section class="card">
+          <h2>Premium ending soon</h2>
+          <p class="note">Premium numbers with 7 days or less left.</p>
+          <ul class="slist plain" id="expiring"></ul>
+          <div class="actions"><button class="btn alt sm" id="selExpiring" type="button">Select these numbers</button></div>
+        </section>
+      </div>
+      <section class="card">
+        <h2>Export</h2>
+        <p class="note">Downloads the numbers list (partly hidden numbers, status, mode, premium days) as a CSV file.</p>
+        <div class="actions"><button class="btn alt" id="exportCsv" type="button">Download CSV</button></div>
+      </section>
+    </section>
+
+    <!-- COMMANDS -->
+    <section class="tabpane" id="pane-commands" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Commands</h1><p>Switch commands on or off, pause the bot, and ban numbers.</p></div></header>
+      <section class="card tight">
+        <h2>Menu style</h2>
+        <p class="note"><b>Classic</b> = one picture with the full text list. <b>Carousel</b> = swipeable cards, one per category. Changes <code>.menu</code> for every linked number at once. People can still send <code>.menu classic</code> or <code>.menu carousel</code> to see one style.</p>
+        <div class="inline"><div class="field sm"><select id="menuStyle" aria-label="Menu style"><option value="classic">Classic (picture + text)</option><option value="carousel">Carousel (swipe cards)</option></select></div></div>
+      </section>
+      <div class="duo">
+        <section class="card tight">
+          <h2>Maintenance mode</h2>
+          <label class="row" for="maintSwitch">
+            <span class="txt"><b>Pause the bot for everybody</b><small>Everyone gets the message below. Only the host admin (OWNER_NUMBER) can still use commands.</small></span>
+            <input type="checkbox" class="sw" id="maintSwitch" role="switch" aria-label="Maintenance mode">
+          </label>
+          <div class="inline"><div class="field sm"><input id="maintText" type="text" maxlength="300" placeholder="Message people see (optional)" aria-label="Maintenance message"></div><button class="btn alt" id="maintSave" type="button">Save</button></div>
+        </section>
+        <section class="card tight">
+          <h2>Banned numbers</h2>
+          <p class="note">Ignored silently by every linked bot.</p>
+          <div class="inline"><div class="field sm"><input id="banNum" type="text" inputmode="numeric" placeholder="94771234567" aria-label="Number to ban"></div><button class="btn alt" id="banAdd" type="button">Ban</button></div>
+          <ul class="slist plain" id="banList"></ul>
+        </section>
+      </div>
+      <section class="card" id="scCard">
+        <h2>Commands for one number</h2>
+        <p class="note">Pick a number, switch <b>Only allow the ticked commands</b> on, tick what it may use and press <b>Save</b>. Every other command is switched off for <b>that number only</b> and disappears from its menu. Other numbers are not touched. The host admin (OWNER_NUMBER) is never limited.</p>
+        <div class="inline"><div class="field sm"><select id="scNum" aria-label="Number to limit"><option value="">Choose a number…</option></select></div></div>
+        <div id="scBody" hidden>
+          <label class="row" for="scOnly"><span class="txt"><b>Only allow the ticked commands</b><small>Off = this number can use every command that is on for everybody (your ticks are kept).</small></span><input type="checkbox" class="sw" id="scOnly" role="switch" aria-label="Only allow the ticked commands"></label>
+          <div class="toolbar"><div class="field sm"><input id="scq" type="text" placeholder="Search commands" autocomplete="off" aria-label="Search commands for this number"></div></div>
+          <div class="actions"><button class="btn alt sm" id="scTick" type="button">Tick shown</button><button class="btn alt sm" id="scUntick" type="button">Untick shown</button><button class="btn" id="scSave" type="button">Save</button><span class="note" id="scCount"></span></div>
+          <ul class="slist" id="scList"></ul>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Commands</h2>
+        <p class="note">Switch a command off for every number. Switched-off commands also disappear from the menu and its buttons. The host admin (OWNER_NUMBER) can still use them.</p>
+        <div class="toolbar">
+          <div class="field sm"><input id="cq" type="text" placeholder="Search commands" autocomplete="off" aria-label="Search commands"></div>
+          <div class="chips" id="cfilters" role="group" aria-label="Filter commands">
+            <button class="chip" type="button" data-f="all" aria-pressed="true">All</button>
+            <button class="chip" type="button" data-f="off" aria-pressed="false">Off</button>
+            <button class="chip" type="button" data-f="err" aria-pressed="false">Errors</button>
+          </div>
+        </div>
+        <div class="actions"><button class="btn alt sm" id="cmdOffShown" type="button">Switch off shown</button><button class="btn alt sm" id="cmdOnShown" type="button">Switch on shown</button></div>
+        <ul class="slist" id="cmdList"></ul>
+      </section>
+    </section>
+
+    <!-- ANALYTICS -->
+    <section class="tabpane" id="pane-analytics" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Analytics</h1><p>How often commands run and which ones fail.</p></div></header>
+      <div class="stats" id="anStats"></div>
+      <section class="card"><h2>Commands per day</h2><p class="note">Last 14 days.</p><div id="anDays" class="colchart"></div></section>
+      <section class="card"><h2>Commands by hour today</h2><div id="anHours" class="colchart"></div></section>
+      <div class="duo">
+        <section class="card"><h2>Top commands</h2><div id="anTop" class="bars"></div></section>
+        <section class="card"><h2>Busiest numbers</h2><div id="anNums" class="bars"></div></section>
+      </div>
+    </section>
+
+    <!-- AUDIT -->
+    <section class="tabpane" id="pane-activity" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Audit</h1><p>Everything done in this console.</p></div></header>
+      <section class="card">
+        <h2>Audit log</h2>
+        <p class="note">Every admin action with the address it came from. Saved, so it stays after a restart (last 1000 entries).</p>
+        <div class="toolbar">
+          <div class="field sm"><input id="auditQ" type="text" placeholder="Search action, detail or address" autocomplete="off" aria-label="Search the audit log"></div>
+          <button class="btn alt sm" id="auditCsv" type="button">Download CSV</button>
+        </div>
+        <ul class="log" id="audit"></ul>
+        <div class="actions"><button class="btn alt sm" id="auditMore" type="button" hidden>Show more</button></div>
+      </section>
+    </section>
+
+    <!-- BROADCAST -->
+    <!-- NOTICES -->
+    <section class="tabpane" id="pane-notices" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Notices</h1><p>News and alerts shown on the pair site and the settings site, with pictures, buttons and read counts.</p></div></header>
+      <div id="ntAdmin"></div>
+    </section>
+
+    <section class="tabpane" id="pane-botmedia" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Bot media</h1><p>Pictures, the alive voice and video note, and the rejected-call message. Pick a file from your gallery or paste a link.</p></div></header>
+      <div id="bmAdmin"></div>
+    </section>
+
+    <section class="tabpane" id="pane-broadcast" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Broadcast</h1><p>Send one message to many numbers, now or later.</p></div></header>
+      <section class="card">
+        <h2>Send a message to everyone</h2>
+        <p class="note">The message arrives in each linked number's own chat with the bot, one number at a time (slowly, on purpose, so WhatsApp is never hit with a burst).</p>
+        <div class="field area"><textarea id="bcText" maxlength="1000" placeholder="Write the message…" aria-label="Broadcast message"></textarea></div>
+        <p class="note"><span id="bcCount">0</span>/1000</p>
+        <div class="toolbar">
+          <div class="chips" id="bcTarget" role="group" aria-label="Who gets it">
+            <button class="chip" type="button" data-t="all" aria-pressed="true">All linked numbers</button>
+            <button class="chip" type="button" data-t="online" aria-pressed="false">Only online numbers</button>
+          </div>
+        </div>
+        <div class="inline">
+          <div class="field sm"><input id="bcWhen" type="datetime-local" aria-label="Send at (leave empty to send now)"></div>
+          <button class="btn" id="bcSend" type="button"><span class="label">Send now</span><span class="spin" aria-hidden="true"></span></button>
+        </div>
+        <p class="note" id="bcHint">Leave the time empty to send now. Pick a time to schedule it (your device's time).</p>
+      </section>
+      <section class="card">
+        <h2>Scheduled and sent</h2>
+        <ul class="slist plain" id="bcList"></ul>
+      </section>
+    </section>
+
+    <!-- LOGS -->
+    <section class="tabpane" id="pane-logs" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Logs</h1><p>What the server is printing, live.</p></div></header>
+      <section class="card">
+        <h2>Live logs</h2>
+        <p class="note">The server's last lines, refreshed every 3 seconds. Numbers and passwords are hidden. Kept in memory only.</p>
+        <div class="toolbar">
+          <div class="field sm"><input id="logQ" type="text" placeholder="Search the logs" autocomplete="off" aria-label="Search the logs"></div>
+          <div class="chips" id="logLevel" role="group" aria-label="Level">
+            <button class="chip" type="button" data-l="all" aria-pressed="true">All</button>
+            <button class="chip" type="button" data-l="warn" aria-pressed="false">Warnings + errors</button>
+            <button class="chip" type="button" data-l="error" aria-pressed="false">Errors</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn alt sm" id="logPause" type="button">Pause</button>
+          <button class="btn alt sm" id="logClear" type="button">Clear screen</button>
+          <button class="btn alt sm" id="logSave" type="button">Download .txt</button>
+          <span class="note" id="logInfo"></span>
+        </div>
+        <pre class="logbox" id="logBox" tabindex="0" aria-label="Server log lines" aria-live="off"></pre>
+      </section>
+    </section>
+
+    <!-- SECURITY -->
+    <section class="tabpane" id="pane-security" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Security</h1><p>Admin login protection and addresses.</p></div></header>
+      <div class="banner" id="secWide" hidden role="status"><span>Many wrong passwords from different addresses. Logins from addresses never used before are slowed down for a few minutes.</span></div>
+      <div class="duo">
+        <section class="card tight">
+          <h2>Locked addresses</h2>
+          <p class="note">5 wrong passwords lock an address: 10 min, then 30 min, 2 h, 6 h, 24 h if it keeps trying.</p>
+          <ul class="slist plain" id="secLocked"></ul>
+        </section>
+        <section class="card tight">
+          <h2>Trusted addresses</h2>
+          <p class="note">Addresses that logged in successfully. They still work while an attack from many addresses is slowed down.</p>
+          <ul class="slist plain" id="secKnown"></ul>
+        </section>
+      </div>
+      <section class="card">
+        <h2>Login history</h2>
+        <p class="note" id="secYou"></p>
+        <ul class="log" id="secLog"></ul>
+      </section>
+    </section>
+
+    <!-- BACKUP -->
+    <section class="tabpane" id="pane-backup" role="tabpanel" hidden>
+      <header class="pagehead"><div><h1>Backup</h1><p>Export or import all linked numbers as one encrypted file.</p></div></header>
+      <section class="card">
+        <h2>Export a backup</h2>
+        <p class="note">One encrypted file with every linked number's WhatsApp login data and settings (premium, web passwords, bans, maintenance). Not included: saved call clips, logs, audit history. <b>Keep the file and the passphrase safe: anyone with both can use those WhatsApp accounts.</b></p>
+        <div class="inline">
+          <div class="field sm"><input id="bkPass" type="password" autocomplete="new-password" placeholder="Passphrase (8+ characters)" aria-label="Backup passphrase"></div>
+          <button class="btn" id="bkExport" type="button"><span class="label">Download backup</span><span class="spin" aria-hidden="true"></span></button>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Import a backup</h2>
+        <p class="note">Adds the numbers from a backup file. Numbers already linked here are never touched. <b>Do not restore while the same numbers are still running on another server: two copies of one WhatsApp login knock each other offline.</b></p>
+        <div class="field"><input id="bkFile" type="file" accept=".riobak,application/octet-stream" aria-label="Backup file"></div>
+        <div class="field"><input id="bkPass2" type="password" autocomplete="off" placeholder="Passphrase of this file" aria-label="Passphrase of the backup file"></div>
+        <label class="row" for="bkGlobal"><span class="txt"><b>Also restore bans, maintenance, disabled commands</b><small>Server-wide settings from the backup. Off = only the numbers and their own settings.</small></span><input type="checkbox" class="sw" id="bkGlobal" role="switch" aria-label="Restore server-wide settings"></label>
+        <div class="actions"><button class="btn" id="bkImport" type="button"><span class="label">Check and import</span><span class="spin" aria-hidden="true"></span></button></div>
+        <p class="note" id="bkResult"></p>
+      </section>
+    </section>
+    </div>
+  </div>
+  </section>
+</div></main>
+
+<!-- selected-numbers bar -->
+<div class="bulkbar" id="bulkbar" hidden role="region" aria-label="Selected numbers">
+  <span class="cnt"><b id="bbCount">0</b> selected</span>
+  <button class="btn sm" id="bbActions" type="button">Actions…</button>
+  <button class="link" id="bbClear" type="button">Clear</button>
+</div>
+
+<!-- actions for the selected numbers -->
+<div class="modal bottom" id="bulk" hidden role="dialog" aria-modal="true" aria-labelledby="bulkTitle">
+  <div class="card sheet wide">
+    <div class="sheet-head"><h2 id="bulkTitle">Actions for <span class="count" id="bulkSel">0 selected</span></h2><button class="x" id="bulkClose" type="button" aria-label="Close">✕</button></div>
+
+    <h3 class="sub">Change an option</h3>
+    <div class="inline">
+      <div class="field sm"><select id="bulkKey" aria-label="Option"></select></div>
+      <div class="field sm" id="bulkValBox"></div>
+      <button class="btn" id="bulkApply" type="button"><span class="label">Apply</span><span class="spin" aria-hidden="true"></span></button>
+    </div>
+
+    <h3 class="sub">👑 Premium</h3>
+    <div class="inline">
+      <div class="field sm"><input id="premDays" type="number" inputmode="numeric" min="1" max="3650" step="1" value="30" aria-label="Premium days"></div>
+      <button class="btn" id="bPremGive" type="button"><span class="label">Give days</span><span class="spin" aria-hidden="true"></span></button>
+    </div>
+    <div class="chips" id="premChips" role="group" aria-label="Quick days">
+      <button class="chip" type="button" data-d="7">7 days</button>
+      <button class="chip" type="button" data-d="30">30 days</button>
+      <button class="chip" type="button" data-d="90">90 days</button>
+      <button class="chip" type="button" data-d="365">1 year</button>
+    </div>
+    <p class="note">Days are added after any days they already have. Each number gets a short message in its own chat.</p>
+
+    <h3 class="sub">Maintenance</h3>
+    <div class="actions">
+      <button class="btn alt" id="bNotice" type="button">Send a message</button>
+      <button class="btn alt" id="bPass" type="button">Send web password</button>
+      <button class="btn alt" id="bRestart" type="button">Restart</button>
+      <button class="btn alt" id="bPremRemove" type="button">Remove premium</button>
+    </div>
+
+    <h3 class="sub danger-t">Danger zone</h3>
+    <div class="actions">
+      <button class="btn danger" id="bReset" type="button">Reset settings</button>
+      <button class="btn danger" id="bDelete" type="button">Unlink and delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- one number -->
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="detail" hidden role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+  <header class="drawer-head">
+    <div class="who">
+      <h2 id="detailTitle"></h2>
+      <div class="pills" id="detailPills"></div>
+    </div>
+    <button class="x" id="detailClose" type="button" aria-label="Close">✕</button>
+  </header>
+  <div class="drawer-body">
+    <h3 class="sub">Quick actions</h3>
+    <div class="actions">
+      <button class="btn alt" id="premGive" type="button">👑 Give premium</button>
+      <button class="btn alt" id="premRemove" type="button">Remove premium</button>
+      <button class="btn alt" id="notice" type="button">Send a message</button>
+      <button class="btn alt" id="resetPass" type="button">New web password</button>
+      <button class="btn alt" id="restart" type="button">Restart bot</button>
+    </div>
+    <h3 class="sub">Settings</h3>
+    <div id="groups"></div>
+    <h3 class="sub danger-t">Danger zone</h3>
+    <div class="actions">
+      <button class="btn danger" id="resetOne" type="button">Reset settings</button>
+      <button class="btn danger" id="remove" type="button">Unlink and delete</button>
+    </div>
+  </div>
+</aside>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="card sheet">
+    <h2 id="mTitle"></h2>
+    <p class="msg" id="mBody"></p>
+    <div class="field area" id="mField" hidden><textarea id="mInput" maxlength="1000" aria-label="Message"></textarea></div>
+    <div class="actions"><button class="btn alt" id="mCancel" type="button">Cancel</button><button class="btn" id="mOk" type="button"><span class="label">Confirm</span></button></div>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="/web.js?v=16"></script>
+<script src="/notices.js?v=1"></script>
+<script src="/botmedia.js?v=1"></script>
+<script src="/leaves.js" defer></script>
+<script src="/snow.js" defer></script>
+</body>
+</html>
